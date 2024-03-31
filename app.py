@@ -49,23 +49,31 @@ def get_courses():
     except Exception as e:
         return jsonify(error="Failed to retrieve courses"), 500
 
-@app.route('/student/courses', methods=['GET'])
-def get_student_courses():
+@app.route('/student/courses/<student_id>', methods=['GET'])
+def get_student_courses(student_id):
     try:
         # Implement logic to retrieve courses for a particular student
         return jsonify(courses=[]), 200
     except Exception as e:
         return jsonify(error="Failed to retrieve student's courses"), 500
 
-@app.route('/lecturer/courses', methods=['GET'])
-def get_lecturer_courses():
+@app.route('/lecturer/courses/<lecturer_id>', methods=['GET'])
+def get_lecturer_courses(lecturer_id):
     try:
         # Implement logic to retrieve courses taught by a particular lecturer
         return jsonify(courses=[]), 200
     except Exception as e:
         return jsonify(error="Failed to retrieve lecturer's courses"), 500
 
-@app.route('/course/register', methods=['POST'])
+@app.route('/student/course/register', methods=['POST'])
+def register_for_course():
+    try:
+        # Implement course registration logic here
+        return jsonify(message="Registered for course successfully"), 200
+    except Exception as e:
+        return jsonify(error="Failed to register for course"), 500
+    
+@app.route('/lecturer/course/register', methods=['POST'])
 def register_for_course():
     try:
         # Implement course registration logic here
@@ -73,35 +81,36 @@ def register_for_course():
     except Exception as e:
         return jsonify(error="Failed to register for course"), 500
 
-@app.route('/course/members', methods=['GET'])
-def get_course_members():
+@app.route('/course/members/<course_id>', methods=['GET'])
+def get_course_members(course_id):
     try:
         # Implement logic to retrieve members of a particular course
         return jsonify(members=[]), 200
     except Exception as e:
         return jsonify(error="Failed to retrieve course members"), 500
 
-@app.route('/course/calendar', methods=['GET', 'POST'])
+@app.route('/course/calendar/<course_id>', methods=['GET', 'POST'])
 def calendar_events():
     try:
         if request.method == 'POST':
             # Implement logic to create a calendar event for a course
             return jsonify(message="Calendar event created successfully"), 201
+        
         # Implement logic to retrieve all calendar events for a course
         return jsonify(events=[]), 200
     except Exception as e:
         return jsonify(error="Failed to process calendar events"), 500
 
-@app.route('/student/calendar', methods=['GET'])
+@app.route('/student/calendar/<student_id>', methods=['GET'])
 def student_calendar_events():
     try:
         # Implement logic to retrieve all calendar events for a student on a particular date
         return jsonify(events=[]), 200
     except Exception as e:
         return jsonify(error="Failed to retrieve student's calendar events"), 500
-
-@app.route('/course/forum', methods=['GET', 'POST'])
-def forums():
+    
+@app.route('/forum/<course_id>', methods=['GET', 'POST'])
+def forums(course_id):
     try:
         if request.method == 'POST':
             # Implement logic to create a forum for a particular course
@@ -111,8 +120,8 @@ def forums():
     except Exception as e:
         return jsonify(error="Failed to process forum requests"), 500
 
-@app.route('/forum/thread', methods=['GET', 'POST'])
-def discussion_thread():
+@app.route('/forum/thread/<forum_id>', methods=['GET', 'POST'])
+def discussion_thread(forum_id):
     try:
         if request.method == 'POST':
             # Implement logic to add a new discussion thread to a forum
@@ -122,16 +131,22 @@ def discussion_thread():
     except Exception as e:
         return jsonify(error="Failed to process discussion thread requests"), 500
 
-@app.route('/thread/reply', methods=['POST'])
-def reply_to_thread():
+@app.route('/thread/reply/<thread_id>', methods=['POST'])
+def reply_to_thread(thread_id):
     try:
         # Implement logic to reply to a thread (replies can have replies)
         return jsonify(message="Reply added successfully"), 201
     except Exception as e:
         return jsonify(error="Failed to add reply to thread"), 500
 
-@app.route('/course/content', methods=['GET', 'POST'])
-def course_content():
+#######################################################################
+#######################################################################
+#######################################################################
+#######################################################################
+#######################################################################
+
+@app.route('/course/content/<course_id>', methods=['GET', 'POST'])
+def course_content(course_id):
     try:
         if request.method == 'POST':
             # Implement logic to add course content
@@ -141,21 +156,21 @@ def course_content():
     except Exception as e:
         return jsonify(error="Failed to process course content requests"), 500
 
-@app.route('/assignment/submit', methods=['POST'])
-def submit_assignment():
+@app.route('/assignment/submit/<assignment_id>', methods=['POST'])
+def submit_assignment(assignment_id):
     try:
         # Implement logic for a student submitting an assignment
         return jsonify(message="Assignment submitted successfully"), 201
     except Exception as e:
         return jsonify(error="Failed to submit assignment"), 500
 
-@app.route('/assignment/grade', methods=['POST'])
-def grade_assignment():
-    try:
-        # Implement logic for a lecturer grading an assignment
-        return jsonify(message="Grade submitted successfully"), 201
-    except Exception as e:
-        return jsonify(error="Failed to submit grade"), 500
+# @app.route('/assignment/grade', methods=['POST'])
+# def grade_assignment():
+#     try:
+#         # Implement logic for a lecturer grading an assignment
+#         return jsonify(message="Grade submitted successfully"), 201
+#     except Exception as e:
+#         return jsonify(error="Failed to submit grade"), 500
 
 
 @app.errorhandler(404)
