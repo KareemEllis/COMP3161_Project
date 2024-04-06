@@ -15,31 +15,139 @@ db_password = os.getenv('PASSWORD')
 db = 'COMP3161_Group_Project'
 
 
-@app.route('/register', methods=['POST'])
+# Register a new user
+@app.route('/api/register', methods=['POST'])
 def register_user():
     try:
-        # Implement registration logic here
+        data = request.get_json()
+        
+        userId = data.get('userId')
+        password = data.get('password')
+        role = data.get('role')
+
+        if not userId or not password or not role:
+            raise ValueError("Invalid request. Please provide all required fields")
+        
+        conn = mysql.connector.connect(
+            host=db_host, 
+            user=db_username, 
+            password=db_password, 
+            database=db
+        )
+
+        cursor = conn.cursor()
+
+        cursor.execute(f"SELECT * FROM users WHERE userId = {userId}")
+
+        if cursor.fetchone():
+            raise ValueError("User already exists")
+        
+        cursor.execute(f"INSERT INTO users (userId, password, role) VALUES ({userId}, {password}, {role})")
+
+        conn.commit()
+
         return jsonify(message="User registered successfully"), 201
+    
     except ValueError as e:
         return jsonify(error=str(e)), 400
+    
     except Exception as e:
         return jsonify(error="An unexpected error occurred"), 500
+    
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
-@app.route('/login', methods=['POST'])
+
+# Login a user
+@app.route('/api/login', methods=['POST'])
 def login():
     try:
-        # Implement login logic here
-        return jsonify(message="Login successful"), 200
+        data = request.get_json()
+        
+        userId = data.get('userId')
+        password = data.get('password')
+
+        if not userId or not password:
+            raise ValueError("Please provide both userId and password")
+
+        conn = mysql.connector.connect(
+            host=db_host, 
+            user=db_username, 
+            password=db_password, 
+            database=db
+        )
+        cursor = conn.cursor()
+
+        cursor.execute(f"SELECT password FROM users WHERE userId = {userId}")
+        user = cursor.fetchone()
+
+        if user:
+            stored_password = user[0] # Assuming Password is the first column in the table
+            
+            if password == stored_password: 
+                return jsonify({"message": "Login successful", "userId": userId}), 200
+            else:
+                return jsonify({"error": "Invalid credentials"}), 401
+        else:
+            return jsonify({"error": "User not found"}), 404
+
+    except ValueError as e:
+        return jsonify(error=str(e)), 400
+    
     except Exception as e:
         return jsonify(error="Login failed"), 401
+    
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
+
+# Create a new course
 @app.route('/course', methods=['POST'])
 def create_course():
     try:
-        # Implement course creation logic here
+        data = request.get_json()
+
+        courseId = data['courseId']
+        courseName = data['courseName']
+        period = data['period']
+
+        if not courseId or not courseName or not period:
+            raise ValueError("Please provide all required fields")
+
+        conn = mysql.connector.connect(
+            host=db_host, 
+            user=db_username, 
+            password=db_password, 
+            database=db
+        )
+        cursor = conn.cursor()
+
+        cursor.execute(f"SELECT * FROM courses WHERE courseId = {courseId}")
+
+        if cursor.fetchone():
+            raise ValueError("Course already exists")
+
+        # Use parameterized query to prevent SQL injection
+        query = "INSERT INTO courses (courseId, courseName, period) VALUES (%s, %s, %s)"
+        cursor.execute(query, (courseId, courseName, period))
+
+        conn.commit()
+
         return jsonify(message="Course created successfully"), 201
+    
+    except ValueError as e:
+        return jsonify(error=str(e)), 400
+    
     except Exception as e:
         return jsonify(error="Failed to create course"), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
 @app.route('/courses', methods=['GET'])
 def get_courses():
