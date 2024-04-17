@@ -12,7 +12,7 @@ app = Flask(__name__)
 db_host = os.getenv('HOST')
 db_username = os.getenv('USERNAME')
 db_password = os.getenv('PASSWORD')
-db = 'COMP3161_Group_Project'
+db = 'OURVLE'
 
 
 # Register a new user
