@@ -85,6 +85,9 @@ def register_user():
         if not userId or not username or not name or not password or not accType:
             return jsonify({"error":"Invalid request. Please provide all required fields (UserId, Username, Name, Password, AccType)"}), 400
         
+        if accType not in ['Admin', 'Course Maintainer', 'Student']:
+            return jsonify({"error":"Invalid account type. Must be one of 'Admin', 'Course Maintainer', 'Student'"}), 400
+        
         conn = get_db_connection()
         cursor = conn.cursor()
 
