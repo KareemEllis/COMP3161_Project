@@ -76,3 +76,63 @@ export const logoutUser = async () => {
       throw error;
     }
 };
+
+
+/**
+ * Check if the user is logged in.
+ * 
+ * @returns {boolean} True if the user is logged in, otherwise false.
+ */ 
+export const isLoggedIn = async () => {
+  const userDataString = localStorage.getItem('userData');
+  if (userDataString) {
+    return true;
+  }
+  else {
+    return false;
+  }
+  return null; // Return null if userData is not found
+}
+
+
+/**
+ * Get the user's ID if logged in.
+ * 
+ * @returns {string} The user's ID if logged in, otherwise null.
+ */ 
+export const getUserId = async () => {
+  const userDataString = localStorage.getItem('userData');
+  if (userDataString) {
+    const userData = JSON.parse(userDataString);
+    return userData.userId;
+  }
+  return null; // Return null if userData is not found
+}
+
+/**
+ * Get the user's name if logged in.
+ *  
+ * @returns {string} The user's name if logged in, otherwise null.
+ */
+export const getUserName = async () => {
+  const userDataString = localStorage.getItem('userData');
+  if (userDataString) {
+    const userData = JSON.parse(userDataString);
+    return userData.name;
+  }
+  return null; // Return null if userData is not found
+}
+
+/**
+ * Get the user's account type if logged in.
+ *  
+ * @returns {string} The user's account type if logged in, otherwise null.
+ */
+export const getUserAccType = async () => {
+  const userDataString = localStorage.getItem('userData');
+  if (userDataString) {
+    const userData = JSON.parse(userDataString);
+    return userData.accType;
+  }
+  return null; // Return null if userData is not found
+}
