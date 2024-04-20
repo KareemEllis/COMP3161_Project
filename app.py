@@ -55,6 +55,16 @@ def load_user(user_id):
     conn.close()
     return None
 
+
+def getAccountType(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT AccType FROM Account WHERE UserId = %s", (user_id,))
+    acc_type = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return acc_type['AccType']
+
 #####################################################################################################
 #####################################################################################################
 #####################################################################################################
@@ -146,17 +156,19 @@ def get_user_session():
 
 # Create a new course
 @app.route('/course', methods=['POST'])
-@login_required
 def create_course():
     try:
-        if current_user.accType != 'Admin':
-            return jsonify({"error":"Unauthorized. Must be an Admin."}), 401
-        
         data = request.get_json()
 
+        userId = data['userId']
         courseId = data['courseId']
         courseName = data['courseName']
         period = data['period']
+
+        accType = getAccountType(userId)
+
+        if accType != 'Admin':
+            return jsonify({"error":"Unauthorized. Must be an Admin."}), 401
 
         if not courseId or not courseName or not period:
             return jsonify({"error":"Please provide all required fields. (courseId, courseName, period)"}), 400
@@ -196,6 +208,7 @@ def get_courses():
 
         return jsonify(courses), 200
     except Exception as e:
+        print(e)
         return jsonify({"error":"Failed to get all courses"}), 500
 
 
@@ -205,6 +218,11 @@ def get_student_courses(student_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
+
+        accType = getAccountType(student_id)
+
+        if accType != 'Student':
+            return jsonify({"error": "User not a Student."}), 401
         
         query = """
         SELECT Course.CourseId, Course.CourseName, Course.Period
@@ -223,6 +241,7 @@ def get_student_courses(student_id):
         
         return jsonify(courses), 200
     except Exception as e:
+        print(e)
         return jsonify(error="Failed to retrieve student's courses"), 500
 
 
@@ -232,6 +251,11 @@ def get_maintainer_courses(maintainer_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
+
+        accType = getAccountType(maintainer_id)
+
+        if accType != 'Course Maintainer':
+            return jsonify({"error": "User not a Course Maintainer."}), 401
         
         query = """
         SELECT Course.CourseId, Course.CourseName, Course.Period
@@ -250,6 +274,7 @@ def get_maintainer_courses(maintainer_id):
         
         return jsonify(courses), 200
     except Exception as e:
+        print(e)
         return jsonify(error="Failed to retrieve maintainer's courses"), 500
 
 # Register user for course
@@ -265,13 +290,8 @@ def register_course():
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT AccType FROM Account WHERE UserId = %s', (user_id,))
-        user_info = cursor.fetchone()
 
-        if not user_info:
-            return jsonify({"error": "User not found"}), 404
-        
-        accType = user_info['AccType']
+        accType = getAccountType(user_id)
 
         if accType == 'Admin':
             return jsonify({"error": "Admins cannot register for courses"}), 403
@@ -290,6 +310,7 @@ def register_course():
             
         return jsonify(message="Registered for course successfully"), 201
     except Exception as e:
+        print(e)
         return jsonify(error="Failed to register for course"), 500
     
 # Get all members for a course
@@ -396,6 +417,7 @@ def create_calendar_event():
         
         return jsonify({"message": "Calendar event created successfully"}), 201
     except Exception as e:
+        print(e)
         return jsonify(error="Failed to create calendar event"), 500
 
 # Get all calendar events for a student on a specific date
@@ -416,9 +438,9 @@ def get_student_daily_calendar_events(user_id):
         cursor = conn.cursor(dictionary=True)
         
         # Verify the user is a student
-        cursor.execute("SELECT AccType FROM Account WHERE UserId = %s", (user_id,))
-        acc_type = cursor.fetchone()
-        if not acc_type or acc_type['AccType'] != 'Student':
+        acc_type = getAccountType(user_id)
+
+        if not acc_type != 'Student':
             return jsonify({"error": "The user ID does not belong to a student"}), 404
         
         # Find courses the student is a member of and fetch calendar events for those courses on the specified date
@@ -439,7 +461,7 @@ def get_student_daily_calendar_events(user_id):
         
         return jsonify({"userId": user_id, "date": str(event_date), "calendarEvents": events}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve calendar events for the student on the specified date"}), 500
 
 # Get all calendar events for a student
@@ -450,9 +472,8 @@ def student_calendar_events(user_id):
         cursor = conn.cursor(dictionary=True)
         
         # Verify the user is a student
-        cursor.execute("SELECT AccType FROM Account WHERE UserId = %s", (user_id,))
-        acc_type = cursor.fetchone()
-        if not acc_type or acc_type['AccType'] != 'Student':
+        acc_type = getAccountType(user_id)
+        if not acc_type != 'Student':
             return jsonify({"error": "The user ID does not belong to a student"}), 404
         
         # Find courses the student is a member of
@@ -478,7 +499,7 @@ def student_calendar_events(user_id):
         
         return jsonify({"userId": user_id, "calendarEvents": events}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve calendar events for the student"}), 500
     
 # Create a new discussion forum
@@ -547,7 +568,7 @@ def get_discussion_forums(course_id):
         
         return jsonify({"courseId": course_id, "discussionForums": forums}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve discussion forums for the course"}), 500
 
 
@@ -593,7 +614,7 @@ def create_thread():
         return jsonify({"message": "Discussion thread added successfully", "threadId": thread_id}), 201
     
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to add discussion thread"}), 500
     
 
@@ -619,7 +640,7 @@ def get_forum_threads(forum_id):
         
         return jsonify({"forumId": forum_id, "threads": threads}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve forum threads"}), 500
     
 
@@ -645,7 +666,7 @@ def get_thread_replies(thread_id):
         
         return jsonify({"threadId": thread_id, "replies": replies}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve thread replies"}), 500    
 
 
@@ -666,9 +687,8 @@ def create_section():
         cursor = conn.cursor(dictionary=True)
         
         # Check if the user is a Course Maintainer
-        cursor.execute("SELECT AccType FROM Account WHERE UserId = %s", (user_id,))
-        acc_type = cursor.fetchone()
-        if not acc_type or acc_type['AccType'] != 'Course Maintainer':
+        acc_type = getAccountType(user_id)
+        if not acc_type != 'Course Maintainer':
             return jsonify({"error": "Only Course Maintainers can add sections"}), 401
         
         # Check if the course exists
@@ -722,7 +742,7 @@ def get_course_sections(course_id):
         
         return jsonify({"courseId": course_id, "sections": sections}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve course sections"}), 500
 
 
@@ -761,7 +781,7 @@ def create_section_item():
         return jsonify({"message": "Section item created successfully", "itemId": item_id}), 201
     
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to create section item"}), 500
 
 
@@ -792,7 +812,7 @@ def get_section_items(section_id):
         
         return jsonify({"sectionId": section_id, "sectionItems": items}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve section items"}), 500
 
 
@@ -831,7 +851,7 @@ def create_topic():
         return jsonify({"message": "Topic created successfully", "topicId": topic_id}), 201
     
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to create topic"}), 500
 
 
@@ -862,7 +882,7 @@ def get_section_topics(section_id):
         
         return jsonify({"sectionId": section_id, "topics": topics}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve section topics"}), 500
 
 
@@ -906,9 +926,347 @@ def get_course_content(course_id):
         
         return jsonify({"courseId": course_id, "sections": sections}), 200
     except Exception as e:
-        print(e)  # It's good practice to log the error for debugging purposes
+        print(e)
         return jsonify({"error": "Failed to retrieve course content"}), 500
 
+
+# Create a new assignment
+@app.route('/create_assignment', methods=['POST'])
+def create_assignment():
+    data = request.json
+    course_id = data.get('courseId')
+    assignment_title = data.get('assignmentTitle')
+    due_date = data.get('dueDate')
+
+    # Validate input
+    if not all([course_id, assignment_title, due_date]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Validate due_date format
+    try:
+        due_date = datetime.strptime(due_date, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid dueDate format. Use YYYY-MM-DD."}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check if the course exists
+        cursor.execute("SELECT CourseId FROM Course WHERE CourseId = %s", (course_id,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "Course not found"}), 404
+        
+        # Insert the assignment
+        cursor.execute("""
+            INSERT INTO Assignment (AssignmentTitle, CourseId, DueDate)
+            VALUES (%s, %s, %s)
+        """, (assignment_title, course_id, due_date))
+        conn.commit()
+        
+        assignment_id = cursor.lastrowid
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"message": "Assignment created successfully", "assignmentId": assignment_id}), 201
+    
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to create assignment"}), 500
+    
+
+# Get all assignments for a course
+@app.route('/assignment/<course_id>', methods=['GET'])
+def get_course_assignments(course_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check if the course exists
+        cursor.execute("SELECT CourseId FROM Course WHERE CourseId = %s", (course_id,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "Course not found"}), 404
+        
+        # Fetch all assignments for the course
+        cursor.execute("""
+            SELECT AssignmentId, AssignmentTitle, CourseId, DueDate
+            FROM Assignment
+            WHERE CourseId = %s
+            ORDER BY DueDate ASC
+        """, (course_id,))
+        
+        assignments = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"courseId": course_id, "assignments": assignments}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve assignments for the course"}), 500
+    
+
+# Create a new assignment submission
+@app.route('/assignment/submit', methods=['POST'])
+def make_assignment_submission():
+    data = request.json
+    user_id = data.get('userId')
+    assignment_id = data.get('assignmentId')
+    submission_date = datetime.now().strftime('%Y-%m-%d')  # Use current date for submission date
+
+    # Validate input
+    if not all([user_id, assignment_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check if the user is a student
+        acc_type = getAccountType(user_id)
+        if acc_type != 'Student':
+            return jsonify({"error": "Only students can make submissions"}), 403
+        
+        # Check if the assignment exists
+        cursor.execute("SELECT AssignmentId FROM Assignment WHERE AssignmentId = %s", (assignment_id,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "Assignment not found"}), 404
+        
+        # Insert the assignment submission
+        cursor.execute("""
+            INSERT INTO AssignmentSubmission (AssignmentId, UserId, SubmissionDate, Grade)
+            VALUES (%s, %s, %s, NULL)
+        """, (assignment_id, user_id, submission_date))
+        conn.commit()
+        
+        submission_id = cursor.lastrowid
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"message": "Assignment submission successful", "submissionId": submission_id}), 201
+    
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to make assignment submission"}), 500
+
+
+# Get all submissions for an assignment
+@app.route('/assignment_submissions/<assignment_id>', methods=['GET'])
+def get_assignment_submissions(assignment_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check if the assignment exists
+        cursor.execute("SELECT AssignmentId FROM Assignment WHERE AssignmentId = %s", (assignment_id,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "Assignment not found"}), 404
+        
+        # Fetch all submissions for the assignment
+        cursor.execute("""
+            SELECT SubmissionId, AssignmentId, UserId, SubmissionDate, Grade
+            FROM AssignmentSubmission
+            WHERE AssignmentId = %s
+            ORDER BY SubmissionDate ASC
+        """, (assignment_id,))
+        
+        submissions = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"assignmentId": assignment_id, "submissions": submissions}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve assignment submissions"}), 500
+
+
+# Assign a grade to an assignment submission
+@app.route('/assign_grade', methods=['POST'])
+def assign_grade():
+    data = request.json
+    user_id = data.get('userId')
+    submission_id = data.get('submissionId')
+    grade = data.get('grade')
+
+    # Validate input
+    if not submission_id or grade is None:
+        return jsonify({"error": "Missing required fields (submissionId, grade)"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        acc_type = getAccountType(user_id)
+        if acc_type != 'Course Maintainer':
+            return jsonify({"error": "Only Course Maintainers can assign grades"}), 403
+        
+        # Check if the submission exists
+        cursor.execute("SELECT SubmissionId FROM AssignmentSubmission WHERE SubmissionId = %s", (submission_id,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "Submission not found"}), 404
+        
+        # Update the submission with the grade
+        cursor.execute("""
+            UPDATE AssignmentSubmission
+            SET Grade = %s
+            WHERE SubmissionId = %s
+        """, (grade, submission_id))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"message": "Grade assigned successfully"}), 200
+    
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to assign grade"}), 500
+
+
+# Get all courses with 50 or more students
+@app.route('/courses_with_many_students', methods=['GET'])
+def get_courses_with_many_students():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute the query
+        cursor.execute("""
+            SELECT Course.CourseId, Course.CourseName, COUNT(Membership.UserId) AS StudentCount
+            FROM Course
+            JOIN Membership ON Course.CourseId = Membership.CourseId
+            GROUP BY Course.CourseId
+            HAVING COUNT(Membership.UserId) >= 50
+        """)
+        
+        courses = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(courses), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve courses with 50 or more students"}), 500
+
+
+# Get all students enrolled in 5 or more courses
+@app.route('/students_with_many_courses', methods=['GET'])
+def get_students_with_many_courses():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute the query
+        cursor.execute("""
+            SELECT User.UserId, User.Username, User.Name, COUNT(Membership.CourseId) AS CourseCount
+            FROM User
+            JOIN Account ON User.UserId = Account.UserId
+            JOIN Membership ON User.UserId = Membership.UserId
+            WHERE Account.AccType = 'Student'
+            GROUP BY User.UserId
+            HAVING COUNT(Membership.CourseId) >= 5
+        """)
+        
+        students = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(students), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve students enrolled in 5 or more courses"}), 500
+
+
+# Get all course maintainers teaching 3 or more courses
+@app.route('/maintainers_with_many_courses', methods=['GET'])
+def get_maintainers_with_many_courses():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute the query
+        cursor.execute("""
+            SELECT User.UserId, User.Username, User.Name, COUNT(Membership.CourseId) AS CourseCount
+            FROM User
+            JOIN Account ON User.UserId = Account.UserId
+            JOIN Membership ON User.UserId = Membership.UserId
+            WHERE Account.AccType = 'Course Maintainer'
+            GROUP BY User.UserId
+            HAVING COUNT(Membership.CourseId) >= 3
+        """)
+        
+        maintainers = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(maintainers), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve Course Maintainers teaching 3 or more courses"}), 500
+
+
+# Get the 10 most enrolled courses
+@app.route('/top_enrolled_courses', methods=['GET'])
+def get_top_enrolled_courses():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute the query
+        cursor.execute("""
+            SELECT Course.CourseId, Course.CourseName, COUNT(Membership.UserId) AS EnrollmentCount
+            FROM Course
+            JOIN Membership ON Course.CourseId = Membership.CourseId
+            GROUP BY Course.CourseId
+            ORDER BY EnrollmentCount DESC
+            LIMIT 10
+        """)
+        
+        top_courses = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(top_courses), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve the 10 most enrolled courses"}), 500
+
+
+# Get the top 10 students with the highest overall averages
+@app.route('/top_students_by_average', methods=['GET'])
+def get_top_students_by_average():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute the query to calculate the average grades and fetch the top 10 students
+        cursor.execute("""
+            SELECT User.UserId, User.Username, User.Name, AVG(AssignmentSubmission.Grade) AS AverageGrade
+            FROM User
+            JOIN AssignmentSubmission ON User.UserId = AssignmentSubmission.UserId
+            WHERE AssignmentSubmission.Grade IS NOT NULL
+            GROUP BY User.UserId
+            ORDER BY AverageGrade DESC
+            LIMIT 10
+        """)
+        
+        top_students = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(top_students), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to retrieve the top 10 students with the highest overall averages"}), 500
+    
 
 ################################################
 # Error handlers
