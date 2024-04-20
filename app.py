@@ -137,7 +137,15 @@ def login():
             user = User(id=user_record['UserId'], username=user_record['Username'], name=user_record['Name'], accType=account_record['AccType'])
             login_user(user)
 
-            return jsonify({"message": "Login successful"}), 200
+            return jsonify({
+                "message": "Login successful", 
+                "user": {
+                    "userId": current_user.id, 
+                    "username": current_user.username, 
+                    "name": current_user.name, 
+                    "accType": current_user.accType
+                }
+            }), 200
         else:
             return jsonify({"error":"User not found"}), 404
 
