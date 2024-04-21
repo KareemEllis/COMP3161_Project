@@ -22,7 +22,7 @@ export const createCourse = async (userId, courseId, courseName, period) => {
     return response.data;
   } catch (error) {
     console.error('Error creating course:', error.response ? error.response.data : error.message);
-    throw error;
+    throw error.response ? error.response.data : error.message;
   }
 };
 
@@ -42,9 +42,32 @@ export const getAllCourses = async () => {
       return response.data;
     } catch (error) {
       console.error('Error retrieving courses:', error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
+
+
+/**
+ * Retrieves course information by its ID.
+ * 
+ * @param {number|string} courseId - The unique identifier for the course.
+ * @returns {Promise<Object>} A promise that resolves to the course data.
+ * @throws {Error} Throws an error if the request fails, e.g., if the course is not found or there is a server error.
+ */
+export const getCourseById = async (courseId) => {
+  try {
+      // Assuming `apiClient` is already set up to include baseURL and any necessary configurations
+      const response = await apiClient.get(`/course/${courseId}`);
+      console.log('Course retrieval successful:', response.data);
+
+      // Returning the response data which contains the course information
+      return response.data;
+  } catch (error) {
+      console.error('Error retrieving course:', error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
+  }
+};
+
 
 
 /**
@@ -66,7 +89,7 @@ export const getStudentCourses = async (studentId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving courses for student ${studentId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -91,7 +114,7 @@ export const getMaintainerCourses = async (maintainerId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving courses for maintainer ${maintainerId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -117,7 +140,7 @@ export const registerForCourse = async (userId, courseId) => {
       return response.data;
     } catch (error) {
       console.error('Error registering for course:', error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -142,6 +165,28 @@ export const getCourseMembers = async (courseId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving members for course ${courseId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
+};
+
+
+/**
+ * Fetches course member information by their member ID.
+ *
+ * @param {number|string} member_id - The unique identifier for the course member.
+ * @returns {Promise<Object>} A promise that resolves to the course member's data, including their user information.
+ * @throws {Error} Throws an error if the request to the API fails or if the course member is not found.
+ */
+export const getCourseMemberById = async (member_id) => {
+  try {
+      // Assuming `apiClient` is already set up to include baseURL and any necessary configurations
+      const response = await apiClient.get(`/course_member/${member_id}`);
+      console.log('Course member retrieval successful:', response.data);
+
+      // Returning the response data which contains the course member information
+      return response.data;
+  } catch (error) {
+      console.error('Error retrieving course member:', error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
+  }
 };

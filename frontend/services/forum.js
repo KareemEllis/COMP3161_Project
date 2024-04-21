@@ -19,7 +19,7 @@ export const createDiscussionForum = async (courseId, forumTitle) => {
     return response.data;
   } catch (error) {
     console.error('Error creating discussion forum:', error.response ? error.response.data : error.message);
-    throw error;
+    throw error.response ? error.response.data : error.message;
   }
 };
 
@@ -44,7 +44,7 @@ export const getDiscussionForumsForCourse = async (courseId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving discussion forums for course ${courseId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -72,7 +72,7 @@ export const createDiscussionThread = async (userId, forumId, threadTitle, threa
       return response.data;
     } catch (error) {
       console.error('Error creating discussion thread:', error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -97,7 +97,7 @@ export const getForumThreads = async (forumId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving forum threads for forum ${forumId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -121,6 +121,6 @@ export const getThreadReplies = async (threadId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving replies for thread ${threadId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };

@@ -20,7 +20,7 @@ export const createSection = async (userId, courseId, sectionTitle) => {
     return response.data;
   } catch (error) {
     console.error('Error creating section:', error.response ? error.response.data : error.message);
-    throw error;
+    throw error.response ? error.response.data : error.message;
   }
 };
 
@@ -45,7 +45,7 @@ export const getCourseSections = async (courseId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving sections for course ${courseId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -70,7 +70,7 @@ export const createSectionItem = async (sectionId, sectionContent) => {
       return response.data;
     } catch (error) {
       console.error('Error creating section item:', error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -95,7 +95,7 @@ export const getSectionItems = async (sectionId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving items for section ${sectionId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -120,7 +120,7 @@ export const createTopic = async (sectionId, topicTitle) => {
       return response.data;
     } catch (error) {
       console.error('Error creating topic:', error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -145,7 +145,7 @@ export const getSectionTopics = async (sectionId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving topics for section ${sectionId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -170,6 +170,6 @@ export const getCourseContent = async (courseId) => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving content for course ${courseId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
