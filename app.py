@@ -71,6 +71,58 @@ def getAccountType(user_id):
 #####################################################################################################
 #####################################################################################################
 
+@app.route('/users', methods=['GET'])
+def get_all_users():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute the query to fetch all users with their account type
+        cursor.execute("""
+            SELECT User.UserId, User.Username, User.Name, Account.AccType
+            FROM User
+            JOIN Account ON User.UserId = Account.UserId
+        """)
+        
+        users = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(users), 200
+    except Exception as e:
+        print(e)  # It's good practice to log the error for debugging purposes
+        return jsonify({"error": "Failed to retrieve users"}), 500
+
+
+@app.route('/user/<user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Fetch the user by userId, including their account type
+        cursor.execute("""
+            SELECT User.UserId, User.Username, User.Name, Account.AccType
+            FROM User
+            JOIN Account ON User.UserId = Account.UserId
+            WHERE User.UserId = %s
+        """, (user_id,))
+        
+        user = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if user:
+            return jsonify(user), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        print(e)  # It's good practice to log the error for debugging purposes
+        return jsonify({"error": "Failed to retrieve user data"}), 500
+
+
 # Register a new user
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -182,6 +234,8 @@ def create_course():
         courseId = data['courseId']
         courseName = data['courseName']
         period = data['period']
+
+        print(userId)
 
         accType = getAccountType(userId)
 
@@ -1181,35 +1235,32 @@ def make_assignment_submission():
         return jsonify({"message": "Failed to make assignment submission"}), 500
 
 
-# Get all submissions for an assignment
 @app.route('/assignment_submissions/<assignment_id>', methods=['GET'])
 def get_assignment_submissions(assignment_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Check if the assignment exists
-        cursor.execute("SELECT AssignmentId FROM Assignment WHERE AssignmentId = %s", (assignment_id,))
-        if cursor.fetchone() is None:
-            return jsonify({"message": "Assignment not found"}), 404
-        
-        # Fetch all submissions for the assignment
+        # Fetch all submissions for the assignment, including the user's data
         cursor.execute("""
-            SELECT SubmissionId, AssignmentId, UserId, SubmissionDate, Grade
+            SELECT AssignmentSubmission.SubmissionId, AssignmentSubmission.AssignmentId, 
+                   AssignmentSubmission.UserId, AssignmentSubmission.SubmissionDate, 
+                   AssignmentSubmission.Grade, User.Username, User.Name
             FROM AssignmentSubmission
-            WHERE AssignmentId = %s
-            ORDER BY SubmissionDate ASC
+            JOIN User ON AssignmentSubmission.UserId = User.UserId
+            WHERE AssignmentSubmission.AssignmentId = %s
+            ORDER BY AssignmentSubmission.SubmissionDate ASC
         """, (assignment_id,))
         
-        submissions = cursor.fetchall()
+        submissions_with_user = cursor.fetchall()
         
         cursor.close()
         conn.close()
         
-        return jsonify({"assignmentId": assignment_id, "submissions": submissions}), 200
+        return jsonify(submissions_with_user), 200
     except Exception as e:
-        print(e)
-        return jsonify({"message": "Failed to retrieve assignment submissions"}), 500
+        print(e)  # It's good practice to log the error for debugging purposes
+        return jsonify({"error": "Failed to retrieve assignment submissions with user data"}), 500
 
 
 @app.route('/assignment_submissions/submission/<submission_id>', methods=['GET'])
@@ -1243,6 +1294,37 @@ def get_assignment_submission_by_id(submission_id):
         print(e)
         return jsonify({"message": "Failed to retrieve assignment submission"}), 500
     
+
+# Get a user's submission for a specific assignment
+@app.route('/user_assignment_submission/<assignment_id>/<user_id>', methods=['GET'])
+def get_user_assignment_submission_with_user_data(assignment_id, user_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Fetch the user's submission for the specified assignment, including the user's data
+        cursor.execute("""
+            SELECT AssignmentSubmission.SubmissionId, AssignmentSubmission.AssignmentId, 
+                   AssignmentSubmission.UserId, AssignmentSubmission.SubmissionDate, 
+                   AssignmentSubmission.Grade, User.Username, User.Name
+            FROM AssignmentSubmission
+            JOIN User ON AssignmentSubmission.UserId = User.UserId
+            WHERE AssignmentSubmission.AssignmentId = %s AND AssignmentSubmission.UserId = %s
+        """, (assignment_id, user_id))
+        
+        submission_with_user_data = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if submission_with_user_data:
+            return jsonify(submission_with_user_data), 200
+        else:
+            return jsonify({"error": "Submission not found"}), 404
+    except Exception as e:
+        print(e)  # It's good practice to log the error for debugging purposes
+        return jsonify({"error": "Failed to retrieve user's assignment submission with user data"}), 500
+
 
 # Get all assignments for a student
 @app.route('/student_assignments/<int:student_id>', methods=['GET'])

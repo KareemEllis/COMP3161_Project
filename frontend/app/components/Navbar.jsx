@@ -1,13 +1,30 @@
 'use client'
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Flex, Box, Text, Button, Link as ChakraLink, useToast } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
+
 import { logoutUser } from '@/services/auth';
+import { getUserData } from '@/services/auth';
 
 const Navbar = () => {
+  const [userData, setUserData] = useState(null)
   const router = useRouter();
   const toast = useToast();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const data = await getUserData();
+        console.log('User data found:', data);
+        setUserData(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -43,10 +60,12 @@ const Navbar = () => {
         <NextLink href="/dashboard" passHref>
           <ChakraLink px={2}>Dashboard</ChakraLink>
         </NextLink>
-        <NextLink href="/my-profile" passHref>
+
+        <NextLink href={`/profile/${userData?.userId}`} passHref>
           <ChakraLink px={2}>My Profile</ChakraLink>
         </NextLink>
-        <NextLink href="/courses" passHref>
+
+        <NextLink href="/course" passHref>
           <ChakraLink px={2}>Courses</ChakraLink>
         </NextLink>
         <Button colorScheme="accent" ml={4} onClick={handleLogout}>Logout</Button>

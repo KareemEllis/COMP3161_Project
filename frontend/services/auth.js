@@ -100,3 +100,43 @@ export const getUserData = async () => {
       throw error.response ? error.response.data : error.message;
   }
 };
+
+
+/**
+ * Fetches all users from the API, including their account types.
+ *
+ * @returns {Promise<Array>} A promise that resolves to an array of user objects, each containing the user's ID, username, name, and account type.
+ * @throws {Error} Throws an error if unable to fetch the users from the API.
+ */
+export const getAllUsers = async () => {
+  try {
+      const response = await apiClient.get('/users');
+      console.log('User retrieval successful:', response.data);
+
+      // Returning the response data which contains an array of users
+      return response.data;
+  } catch (error) {
+      console.error('Error retrieving users:', error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
+  }
+};
+
+/**
+ * Fetches details of a specific user by their user ID.
+ *
+ * @param {number|string} userId - The unique identifier of the user.
+ * @returns {Promise<Object>} A promise that resolves to the user's data, including their ID, username, name, and account type.
+ * @throws {Error} Throws an error if unable to fetch the user data from the API, including when the user is not found.
+ */
+export const getUserById = async (userId) => {
+  try {
+      const response = await apiClient.get(`/user/${userId}`);
+      console.log('User retrieval successful:', response.data);
+
+      // Returning the response data which contains the user's information
+      return response.data;
+  } catch (error) {
+      console.error('Error retrieving user data:', error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
+  }
+};

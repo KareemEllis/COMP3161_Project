@@ -13,6 +13,7 @@ export const createCourse = async (userId, courseId, courseName, period) => {
   try {
     // Constructing the data object with the parameters
     const data = { userId, courseId, courseName, period };
+    console.log(data)
 
     // Sending a POST request to the /course endpoint
     const response = await apiClient.post('/course', data);

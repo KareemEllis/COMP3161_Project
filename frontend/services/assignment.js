@@ -124,6 +124,30 @@ export const getAssignmentSubmissions = async (assignmentId) => {
 
 
 /**
+ * Fetches a user's submission for a specific assignment, including user data.
+ *
+ * @param {number|string} assignmentId - The unique identifier of the assignment.
+ * @param {number|string} userId - The unique identifier of the user.
+ * @returns {Promise<Object>} A promise that resolves to the submission data, including the user's details.
+ * @throws {Error} Throws an error if unable to fetch the submission from the API, including when the submission is not found.
+ */
+export const getUserAssignmentSubmission = async (assignmentId, userId) => {
+  try {
+      // Assuming `apiClient` is an instance of Axios or a similar library configured with your API's base URL and headers
+      const response = await apiClient.get(`/user_assignment_submission/${assignmentId}/${userId}`);
+      console.log('User assignment submission retrieval successful:', response.data);
+
+      // Returning the response data which contains the user's assignment submission and user details
+      return response.data;
+  } catch (error) {
+      console.error('Error retrieving user assignment submission:', error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
+  }
+};
+
+
+
+/**
  * Fetches details of an assignment submission by its submission ID.
  *
  * @param {number|string} submissionId - The unique identifier for the assignment submission.

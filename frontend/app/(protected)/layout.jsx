@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
         };
 
         checkUserData();
-      }, [router]);
+    }, [router]);
 
     return (
         <>

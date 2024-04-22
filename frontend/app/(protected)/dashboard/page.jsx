@@ -27,8 +27,14 @@ const Dashboard = () => {
         console.log('User data found:', userData);
         setUserData(userData);
 
-        const coursesData = await getStudentCourses(userData.userId);
-        setCourses(coursesData);
+        if (userData.accType == 'Course Maintainer') {
+          const maintainerCoursesData = await getMaintainerCourses(userData.userId);
+          setCourses(maintainerCoursesData);
+        }
+        else if (userData.accType == 'Student'){
+          const coursesData = await getStudentCourses(userData.userId);
+          setCourses(coursesData);
+        }
 
         const assignmentsData = await getStudentAssignments(userData.userId);
         setAssignments(assignmentsData.courses);
