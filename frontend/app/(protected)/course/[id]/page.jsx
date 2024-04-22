@@ -16,20 +16,21 @@ import {
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FaUserGraduate, FaChalkboardTeacher } from 'react-icons/fa';
+import { FaUserGraduate, FaChalkboardTeacher, FaCalendarAlt } from 'react-icons/fa';
 
 import { getCourseById } from '@/services/course';
 import { getCourseContent } from '@/services/course-content';
 import { getCourseAssignments } from '@/services/assignment';
 import { getCourseMembers } from '@/services/course';
+import { getCalendarEventsForCourse } from '@/services/calendar';
 
 const CourseContentPage = ({ params }) => {
     const [course, setCourse] = useState(null); // [1
     const [courseContent, setCourseContent] = useState(null);
     const [assignments, setAssignments] = useState([]);
     const [members, setMembers] = useState([]);
+    const [calendarEvents, setCalendarEvents] = useState([])
 
-    const router = useRouter();
     const id = params.id;
 
     const primaryColor = useColorModeValue('primary.500', 'primary.300');
@@ -46,6 +47,8 @@ const CourseContentPage = ({ params }) => {
             setAssignments(assignmentsData.assignments);
             const membersData = await getCourseMembers(id);
             setMembers(membersData.members);
+            const calendarEventData = await getCalendarEventsForCourse(id);
+        setCalendarEvents(calendarEventData.calendarEvents);
         } catch (error) {
             console.error('Error retrieving data:', error);
         }
@@ -113,6 +116,22 @@ const CourseContentPage = ({ params }) => {
             </Tbody>
           </Table>
         </Box>
+        
+        {/* Calendar Events Section */}
+        <Heading size="md" my={4}>Calendar Events</Heading>
+        <List>
+          {calendarEvents.map((event) => (
+            <ListItem key={event.EventId} display="flex" alignItems="center">
+              <ListIcon as={FaCalendarAlt} color={accentColor} mr={2} />
+              <Box flex="1">
+                <Text fontWeight="bold">{event.EventTitle}</Text>
+                <Text fontSize="sm">{event.Description}</Text>
+                <Text fontSize="sm">Starts: {event.StartDate}</Text>
+                <Text fontSize="sm">Ends: {event.EndDate}</Text>
+              </Box>
+            </ListItem>
+          ))}
+        </List>
 
         {/* Course Content */}
         <Heading size="md" my={4}>Content</Heading>
