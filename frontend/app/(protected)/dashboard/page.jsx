@@ -122,10 +122,10 @@ const Dashboard = () => {
                 key={event.EventId} 
                 p={2} 
                 borderRadius="md" 
-                _hover={{ bg: "primary.50" }} 
-                transition="background 0.3s"
-                onClick={() => router.push(`/calendar_event/${event.EventId}`)} 
-                cursor="pointer"
+                // _hover={{ bg: "primary.50" }} 
+                // transition="background 0.3s"
+                // onClick={() => router.push(`/calendar_event/${event.EventId}`)} 
+                // cursor="pointer"
               >
                 <Flex alignItems="center">
                   <ListIcon as={CalendarIcon} color="accent.500" />
