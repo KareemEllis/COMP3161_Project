@@ -727,6 +727,33 @@ def get_discussion_forums(course_id):
         return jsonify({"message": "Failed to retrieve discussion forums for the course"}), 500
 
 
+@app.route('/get-forum/<forum_id>', methods=['GET'])
+def get_forum_by_id(forum_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Fetch the forum by forumId
+        cursor.execute("""
+            SELECT ForumId, ForumTitle, CourseId
+            FROM DiscussionForum
+            WHERE ForumId = %s
+        """, (forum_id,))
+        
+        forum = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if forum:
+            return jsonify(forum), 200
+        else:
+            return jsonify({"error": "Forum not found"}), 404
+    except Exception as e:
+        print(e)  # It's good practice to log the error for debugging purposes
+        return jsonify({"error": "Failed to retrieve forum"}), 500
+    
+
 # Create a new discussion thread
 @app.route('/create_thread', methods=['POST'])
 def create_thread():
@@ -819,7 +846,7 @@ def get_thread_replies(thread_id):
         cursor.close()
         conn.close()
         
-        return jsonify({"threadId": thread_id, "replies": replies}), 200
+        return jsonify({"ThreadId": thread_id, "replies": replies}), 200
     except Exception as e:
         print(e)
         return jsonify({"message": "Failed to retrieve thread replies"}), 500    

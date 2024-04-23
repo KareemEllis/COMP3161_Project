@@ -49,6 +49,27 @@ export const getDiscussionForumsForCourse = async (courseId) => {
 };
 
 
+/**
+ * Fetches forum details by its forum ID.
+ *
+ * @param {number|string} forumId - The unique identifier of the forum.
+ * @returns {Promise<Object>} A promise that resolves to the forum's details, including its ID, title, and associated course ID.
+ * @throws {Error} Throws an error if unable to fetch the forum details from the API, including when the forum is not found.
+ */
+export const getForumById = async (forumId) => {
+  try {
+      const response = await apiClient.get(`/get-forum/${forumId}`);
+      console.log('Forum retrieval successful:', response.data);
+
+      // Returning the response data which contains the forum details
+      return response.data;
+  } catch (error) {
+      console.error('Error retrieving forum:', error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
+  }
+};
+
+
 
 /**
  * Creates a new discussion thread or reply in a forum.
@@ -91,7 +112,7 @@ export const getForumThreads = async (forumId) => {
   
       // Sending a GET request to the constructed endpoint
       const response = await apiClient.get(url);
-      console.log(`Forum threads retrieval successful for forum ${forumId}:`, response.data);
+      //console.log(`Forum threads retrieval successful for forum ${forumId}:`, response.data);
   
       // Returning the top-level threads data specific to the forum
       return response.data;
@@ -115,7 +136,7 @@ export const getThreadReplies = async (threadId) => {
   
       // Sending a GET request to the constructed endpoint
       const response = await apiClient.get(url);
-      console.log(`Thread replies retrieval successful for thread ${threadId}:`, response.data);
+      //console.log(`Thread replies retrieval successful for thread ${threadId}:`, response.data);
   
       // Returning the replies data specific to the thread
       return response.data;

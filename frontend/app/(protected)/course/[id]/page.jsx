@@ -10,26 +10,30 @@ import {
     Link,
     Table, Thead, Tbody, Tr, Th, Td,
     List, ListItem, ListIcon,
-    useColorModeValue 
+    useColorModeValue, 
 } from '@chakra-ui/react';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FaUserGraduate, FaChalkboardTeacher, FaCalendarAlt } from 'react-icons/fa';
+import { FaUserGraduate, FaChalkboardTeacher, FaCalendarAlt, FaForumbee } from 'react-icons/fa';
 
 import { getCourseById } from '@/services/course';
 import { getCourseContent } from '@/services/course-content';
 import { getCourseAssignments } from '@/services/assignment';
 import { getCourseMembers } from '@/services/course';
 import { getCalendarEventsForCourse } from '@/services/calendar';
+import { getDiscussionForumsForCourse } from '@/services/forum';
 
 const CourseContentPage = ({ params }) => {
-    const [course, setCourse] = useState(null); // [1
+    const router = useRouter();
+    
+    const [course, setCourse] = useState(null);
     const [courseContent, setCourseContent] = useState(null);
     const [assignments, setAssignments] = useState([]);
     const [members, setMembers] = useState([]);
-    const [calendarEvents, setCalendarEvents] = useState([])
+    const [calendarEvents, setCalendarEvents] = useState([]);
+    const [forums, setForums] = useState([]);
 
     const id = params.id;
 
@@ -48,7 +52,9 @@ const CourseContentPage = ({ params }) => {
             const membersData = await getCourseMembers(id);
             setMembers(membersData.members);
             const calendarEventData = await getCalendarEventsForCourse(id);
-        setCalendarEvents(calendarEventData.calendarEvents);
+            setCalendarEvents(calendarEventData.calendarEvents);
+            const forumsData = await getDiscussionForumsForCourse(id);
+            setForums(forumsData.discussionForums);
         } catch (error) {
             console.error('Error retrieving data:', error);
         }
@@ -96,6 +102,21 @@ const CourseContentPage = ({ params }) => {
           ))}
         </List>
 
+        {/* Forums Section */}
+        <Heading size="md" my={4}>Discussion Forums</Heading>
+        <List>
+          {forums.map(forum => (
+            <ListItem key={forum.ForumId} display="flex" alignItems="center">
+              <ListIcon as={FaForumbee} color={accentColor} mr={2} />
+              <Link href={`/forum/${forum.ForumId}`}>
+                <Box flex="1">
+                  <Text>{forum.ForumTitle}</Text>
+                </Box>
+              </Link>
+            </ListItem>
+          ))}
+        </List>
+
         {/* Assignments */}
         <Box w="full">
           <Heading size="md" my={4}>Assignments</Heading>
@@ -108,7 +129,13 @@ const CourseContentPage = ({ params }) => {
             </Thead>
             <Tbody>
               { assignments && assignments.map((assignment) => (
-                <Tr key={assignment.AssignmentId}>
+                <Tr 
+                  key={assignment.AssignmentId}
+                  onClick={() => router.push(`/assignment/${assignment.AssignmentId}`)}
+                  cursor="pointer"
+                  _hover={{ bg: "primary.50" }}
+                  transition="background 0.3s"
+                >
                   <Td>{assignment.AssignmentTitle}</Td>
                   <Td isNumeric>{assignment.DueDate}</Td>
                 </Tr>
