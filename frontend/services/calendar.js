@@ -9,7 +9,7 @@ import apiClient from './apiClient';
 export const getCalendarEventsForCourse = async (courseId) => {
   try {
     // Constructing the URL with the courseId
-    const url = `/calendar/${courseId}`;
+    const url = `/calendar/course/${courseId}`;
 
     // Sending a GET request to the constructed endpoint
     const response = await apiClient.get(url);
@@ -19,7 +19,7 @@ export const getCalendarEventsForCourse = async (courseId) => {
     return response.data;
   } catch (error) {
     console.error(`Error retrieving calendar events for course ${courseId}:`, error.response ? error.response.data : error.message);
-    throw error;
+    throw error.response ? error.response.data : error.message;
   }
 };
 
@@ -46,56 +46,56 @@ export const createCalendarEvent = async (courseId, startDate, endDate, eventTit
       return response.data;
     } catch (error) {
       console.error('Error creating calendar event:', error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
 
 /**
- * Retrieves all calendar events for a student on a specific date.
+ * Retrieves all calendar events for a user on a specific date.
  * 
- * @param {string} userId The ID of the student.
+ * @param {string} userId The ID of the user.
  * @param {string} date The specific date for which to retrieve events, in YYYY-MM-DD format.
  * @returns {Promise} The promise resolving to the response of the request, including calendar events for the date.
  */
-export const getStudentDailyCalendarEvents = async (userId, date) => {
+export const getUserDailyCalendarEvents = async (userId, date) => {
     try {
       // Constructing the URL with the userId and appending the date as a query parameter
-      const url = `/student_daily_calendar_events/${userId}?date=${date}`;
+      const url = `/calendar/user/daily/${userId}?date=${date}`;
   
       // Sending a GET request to the constructed endpoint
       const response = await apiClient.get(url);
-      console.log(`Calendar events retrieval successful for student ${userId} on ${date}:`, response.data);
+      console.log(`Calendar events retrieval successful for user ${userId} on ${date}:`, response.data);
   
-      // Returning the calendar events data specific to the student and date
+      // Returning the calendar events data specific to the user and date
       return response.data;
     } catch (error) {
-      console.error(`Error retrieving calendar events for student ${userId} on ${date}:`, error.response ? error.response.data : error.message);
-      throw error;
+      console.error(`Error retrieving calendar events for user ${userId} on ${date}:`, error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
     }
 };
 
 
 
 /**
- * Retrieves all calendar events for a student across all their courses.
+ * Retrieves all calendar events for a user across all their courses.
  * 
- * @param {string} userId The ID of the student.
- * @returns {Promise} The promise resolving to the response of the request, including all calendar events for the student.
+ * @param {string} userId The ID of the user.
+ * @returns {Promise} The promise resolving to the response of the request, including all calendar events for the user.
  */
-export const getStudentCalendarEvents = async (userId) => {
+export const getUserCalendarEvents = async (userId) => {
     try {
       // Constructing the URL with the userId
-      const url = `/calendar/student/${userId}`;
+      const url = `/calendar/user/${userId}`;
   
       // Sending a GET request to the constructed endpoint
       const response = await apiClient.get(url);
-      console.log(`Calendar events retrieval successful for student ${userId}:`, response.data);
+      console.log(`Calendar events retrieval successful for user ${userId}:`, response.data);
   
-      // Returning the calendar events data specific to the student
+      // Returning the calendar events data specific to the user
       return response.data;
     } catch (error) {
-      console.error(`Error retrieving calendar events for student ${userId}:`, error.response ? error.response.data : error.message);
-      throw error;
+      console.error(`Error retrieving calendar events for user ${userId}:`, error.response ? error.response.data : error.message);
+      throw error.response ? error.response.data : error.message;
     }
 };

@@ -1,91 +1,91 @@
 'use client'
-import { useState } from 'react';
-import Router from 'next/router';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Container, Box, Button, FormControl, FormLabel, Input, useToast, Heading,
+  VStack, useColorModeValue
+} from '@chakra-ui/react';
 
-export default function CreateCourse() {
-    const [formData, setFormData] = useState({
-        courseId: '',
-        courseName: '',
-        period: ''
-    });
-    const [alert, setAlert] = useState({ show: false, message: '', type: '' });
+import { createCourse } from '@/services/course';
+import { getUserData } from '@/services/auth';
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+
+const CreateCoursePage = () => {
+  const [courseData, setCourseData] = useState({
+    courseId: '',
+    courseName: '',
+    period: '',
+  });
+  const [userData, setUserData] = useState({});
+  const router = useRouter();
+  const toast = useToast();
+
+  // Check if the user is an admin
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userData = await getUserData();
+      setUserData(userData);
+
+      if (userData.accType !== 'Admin') {
+        router.push('/dashboard');
+      }
     };
 
-    const handleSubmit = async (e) => {
-        try {
-            e.preventDefault();
+    fetchUserData();
+  }, []);
 
-            const response = await fetch('http://localhost:8080/api/course', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCourseData(prevState => ({ ...prevState, [name]: value }));
+  };
 
-            if (response.ok) {
-                alert('Course created successfully');
-                setAlert({ show: true, message: 'Course created successfully', type: 'success' });
-                Router.push('/'); // Adjust the redirect as necessary
-            } else {
-                const errorData = await response.json();
-                setAlert({ show: true, message: errorData.error || 'Failed to create course', type: 'error' });
-            }
-        } catch (error) {
-            setAlert({ show: true, message: errorData.error || 'Failed to create course', type: 'error' });
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const userId = userData.userId; // Get this from the actual user session or context
+    try {
+      await createCourse(userId, courseData.courseId, courseData.courseName, courseData.period);
+      toast({
+        title: 'Course created successfully',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push('/course');
+    } catch (error) {
+      toast({
+        title: 'Failed',
+        description: error.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <div className="px-8 py-6 mt-4 text-left bg-white shadow-lg">
-                <h3 className="text-2xl font-bold text-center">Create New Course</h3>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label className="block" htmlFor="courseId">Course ID</label>
-                        <input
-                            type="text"
-                            name="courseId"
-                            onChange={handleChange}
-                            className="w-full p-2 mt-2 border rounded-md"
-                            required
-                        />
-                    </div>
-                    <div className="mt-4">
-                        <label className="block" htmlFor="courseName">Course Name</label>
-                        <input
-                            type="text"
-                            name="courseName"
-                            onChange={handleChange}
-                            className="w-full p-2 mt-2 border rounded-md"
-                            required
-                        />
-                    </div>
-                    <div className="mt-4">
-                        <label className="block" htmlFor="period">Period</label>
-                        <input
-                            type="text"
-                            name="period"
-                            onChange={handleChange}
-                            className="w-full p-2 mt-2 border rounded-md"
-                            required
-                        />
-                    </div>
-                    <div className="flex justify-center mt-6">
-                        <button type="submit" className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
-                            Create Course
-                        </button>
-                    </div>
-                </form>
-                {alert.show && (
-                    <div className={`mt-4 text-white px-6 py-2 rounded-md ${alert.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}>
-                        {alert.message}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+  return (
+    <Container maxW={'5xl'} mt={5} mb={5}>
+    <Box p={5}>
+      <Heading mb={4}>Create a New Course</Heading>
+      <form onSubmit={handleSubmit}>
+        <VStack spacing={4}>
+          <FormControl isRequired>
+            <FormLabel>Course ID</FormLabel>
+            <Input name="courseId" value={courseData.courseId} onChange={handleChange} />
+          </FormControl>
+          <FormControl isRequired>
+            <FormLabel>Course Name</FormLabel>
+            <Input name="courseName" value={courseData.courseName} onChange={handleChange} />
+          </FormControl>
+          <FormControl isRequired>
+            <FormLabel>Period</FormLabel>
+            <Input name="period" value={courseData.period} onChange={handleChange} />
+          </FormControl>
+          <Button colorScheme="primary" type="submit">Create Course</Button>
+        </VStack>
+      </form>
+    </Box>
+    </Container>
+  );
+};
+
+export default CreateCoursePage;

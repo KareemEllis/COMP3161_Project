@@ -15,7 +15,7 @@ export const getCoursesWithManyStudents = async () => {
     return response.data;
   } catch (error) {
     console.error(`Error retrieving courses with 50 or more students:`, error.response ? error.response.data : error.message);
-    throw error;
+    throw error.response ? error.response.data : error.message;
   }
 };
 
@@ -35,7 +35,7 @@ export const getStudentsWithManyCourses = async () => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving students with many courses:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -55,7 +55,7 @@ export const getMaintainersWithManyCourses = async () => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving course maintainers with many courses:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -76,7 +76,7 @@ export const getTopEnrolledCourses = async () => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving the top enrolled courses:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
 
@@ -96,6 +96,6 @@ export const getTopStudentsByAverage = async () => {
       return response.data;
     } catch (error) {
       console.error(`Error retrieving the top students by average grade:`, error.response ? error.response.data : error.message);
-      throw error;
+      throw error.response ? error.response.data : error.message;
     }
 };
