@@ -1,3 +1,5 @@
+from datetime import timedelta
+import datetime
 from random import randint
 import random
 from faker import Faker
@@ -20,6 +22,12 @@ course_names = []
 
 section_ids = []
 topic_ids = []
+forum_ids = []
+thread_ids = []
+
+assignment_ids = []
+submission_ids = []
+assignments_course  = {}
 
 user_ids = []
 account_ids = []
@@ -29,8 +37,8 @@ usernames = []
 passwords = []
 
 # num_users = 100000
-num_users = 1000
-num_courses = 20
+num_users = 200000
+num_courses = 300
 min_num_members = 10
 
 def generateUsers():
@@ -111,9 +119,9 @@ def generateAccounts():
 
 def generateStudents():
 
-    file.write(dedent("""
-    INSERT INTO Student
-                    VALUES"""))
+    # file.write(dedent("""
+    # INSERT INTO Student
+    #                 VALUES"""))
     
     # get the acc types
     for i, item in enumerate(account_dict.items()):
@@ -122,24 +130,24 @@ def generateStudents():
             account_id = item[0]
             user_id = item[1][1]
         
-            if (i == len(user_dict.keys())-1):
-                file.write(f"""
-                        ('{account_id}', '{item[1][0]}');\n
-                    """);
-            else:
-                file.write(f"""
-                        ('{account_id}', '{item[1][0]}'),""");
+            # if (i == len(user_dict.keys())-1):
+            #     file.write(f"""
+            #             ('{account_id}', '{item[1][0]}');\n
+            #         """);
+            # else:
+            #     file.write(f"""
+            #             ('{account_id}', '{item[1][0]}'),""");
                 
             student_ids.append(account_id)
         
-    print(len(student_ids))
+    # print(len(student_ids))
     
 
 def generateAdmins():
 
-    file.write(dedent("""
-    INSERT INTO Admin
-                    VALUES"""))
+    # file.write(dedent("""
+    # INSERT INTO Admin
+    #                 VALUES"""))
     
     # get the acc types
     for i, item in enumerate(account_dict.items()):
@@ -148,24 +156,24 @@ def generateAdmins():
             account_id = item[0]
             user_id = item[1][1]
         
-            if (i == len(user_dict.keys())-1):
-                file.write(f"""
-                        ('{account_id}', '{item[1][0]}');\n
-                    """);
-            else:
-                file.write(f"""
-                        ('{account_id}', '{item[1][0]}'),""");
+            # if (i == len(user_dict.keys())-1):
+            #     file.write(f"""
+            #             ('{account_id}', '{item[1][0]}');\n
+            #         """);
+            # else:
+            #     file.write(f"""
+            #             ('{account_id}', '{item[1][0]}'),""");
                 
             admin_ids.append(account_id)
         
-    print(len(admin_ids))
+    # print(len(admin_ids))
 
 
 def generateCourseMaintainers():
 
-    file.write(dedent("""
-    INSERT INTO CourseMaintainer
-                    VALUES"""))
+    # file.write(dedent("""
+    # INSERT INTO CourseMaintainer
+    #                 VALUES"""))
     
     # get the acc types
     for i, item in enumerate(account_dict.items()):
@@ -174,17 +182,17 @@ def generateCourseMaintainers():
             account_id = item[0]
             user_id = item[1][1]
         
-            if (i == len(user_dict.keys())-1):
-                file.write(f"""
-                        ('{account_id}', '{item[1][0]}');\n
-                    """);
-            else:
-                file.write(f"""
-                        ('{account_id}', '{item[1][0]}'),""");
+            # if (i == len(user_dict.keys())-1):
+            #     file.write(f"""
+            #             ('{account_id}', '{item[1][0]}');\n
+            #         """);
+            # else:
+            #     file.write(f"""
+            #             ('{account_id}', '{item[1][0]}'),""");
                 
             course_maintenance_ids.append(account_id)
         
-    print(len(course_maintenance_ids))
+    # print(len(course_maintenance_ids))
 
 
 # Need to add Period
@@ -262,24 +270,18 @@ def generateCourses():
         
         if (i == num_courses-1):
             file.write(f"""
-                       ('{course_id}', '{course_name}'. '{course_code}', '{period}'); \n
+                       ('{course_id}', '{course_name}', '{period}'); \n
                        """)
                     
         else:
            file.write(f"""
-                       ('{course_id}', '{course_name}', '{course_code}', '{period}',)
+                       ('{course_id}', '{course_name}', '{period}'),
                        """);
            
 
 def generateMembership():
     
     
-    file.write(dedent("""
-    INSERT INTO Membership
-                    VALUES"""))
-    
-    
-    membership_data = []
     unassigned_accounts = []
     assigned_accounts = []
     
@@ -330,10 +332,19 @@ def generateMembership():
             course_counts[course_id] += 1
             
             # Write to file
-            if (i == len(courses_ids) - 1) and (account_id == selected_accs[-1]):
-                file.write(f"""('{member_id}', '{account_dict[account_id][1]}', '{course_id}', '{account_dict[account_id][0]}');\n""")
-            else:
-                file.write(f"""('{member_id}', '{account_dict[account_id][1]}', '{course_id}', '{account_dict[account_id][0]}'),\n""")
+            
+            file.write(dedent(f"""
+                              INSERT INTO Membership (MemberId, UserId, CourseId) VALUES
+                              ('{member_id}', '{account_dict[account_id][1]}', '{course_id}');\n
+                              """))
+                              
+
+            # if (i == len(courses_ids) - 1) and (account_id == selected_accs[-1]):
+            #     file.write(f"""('{member_id}', '{account_dict[account_id][1]}', '{course_id}');\n
+            #                """)
+            # else:
+            #     file.write(f"""('{member_id}', '{account_dict[account_id][1]}', '{course_id}'),
+            #                """)
             
             # Track course assignment count for the account
             account_course_assignments[account_id] += 1
@@ -393,8 +404,10 @@ def assignRemainingAccounts(unassigned_accounts, courses_ids, account_dict, memb
                 continue
             membership_data.append(data)
             
-            # Write the assigned membership information to the file
-            file.write(f"('{member_id}', '{account_dict[account_id][1]}', '{course_id}', '{account_dict[account_id][0]}'),\n")
+            file.write(dedent(f"""
+                              INSERT INTO Membership (MemberId, UserId, CourseId) VALUES
+                              ('{member_id}', '{account_dict[account_id][1]}', '{course_id}');\n
+                              """))
             
             # Increment the course count for the account
             account_counts[account_id] += 1
@@ -431,12 +444,12 @@ def generateSections():
             
             if (index == num_courses-1) and (i == num_sections-1):
                 file.write(f"""
-                        ('{section_id}', '{section_title}'. '{course_id}'); \n
+                        ('{section_id}', '{section_title}', '{course_id}'); \n
                         """)
                         
             else:
                 file.write(f"""
-                            ('{section_id}', '{section_title}'. '{course_id}'),
+                            ('{section_id}', '{section_title}', '{course_id}'),
                             """);
                 
 def generateTopics():
@@ -507,6 +520,181 @@ def generateSectionItems():
                         """)
     
 
+def generateAssignments():
+    # [AssignmentId, CourseId, AssignmentTitle, DueDate]
+
+    # example data:
+    # 1, 1127, PythonTest, May 05, 2018
+
+    
+    for index, course_id in enumerate(courses_ids):
+        
+        num_assginments = random.randint(0,5)
+
+        delta = timedelta(days=randint(5, 14))
+        due_date = (datetime.datetime.now() + delta).strftime("%Y-%m-%d")
+        
+        for i in range(num_assginments):
+           assignment_id = randint(100, 9999999)
+           assignment_title = f'Assignment {1+i}'
+
+           while assignment_id in assignment_ids:
+            assignment_id = randint(100, 9999999)
+           assignment_ids.append(assignment_id)
+           
+           # Track assignments and courses in a dictionary
+           assignments_course[assignment_id] = course_id
+           
+           file.write(dedent(f"""
+                            INSERT INTO Assignment (AssignmentId, AssignmentTitle, CourseId, DueDate) VALUES
+                            ('{assignment_id}','{assignment_title}','{course_id}','{due_date}');\n
+                            """))
+                 
+    print('Assignments and Courses:', assignments_course)
+
+def generateAssignmentSubmission():
+   
+   # [SubmissionId, AssignmentId, UserId, SubmissionDate]
+
+   # example:
+   # 283, 3, 54387, May 24, 2024
+   
+   print('Membership Data (first 5)', membership_data[:5])
+   
+   
+   for index, item in enumerate(assignments_course.items()):
+        assignment_id = item[0]
+        course_id = item[1]
+        
+        for member in membership_data:
+            
+            students = [student for student in membership_data if student['course_id'] == course_id and student['account_type'] == 'Student']
+            # example data from the students list
+            # {'member_id': 100, 'course_id': 100, 'account_id': 100, 'account_type': 'Student'}
+            
+            if member['course_id'] == course_id and member['account_type'] == 'Student':
+                
+                # get user_id from account_dict by checking if the account_id matches the account_id in membership_data
+                user_id = account_dict[member['account_id']][1]
+                
+                date = datetime.datetime.now()
+                submission_date = date.strftime("%Y-%m-%d")
+                
+                submission_id = randint(100, 9999999)
+                
+                while submission_id in submission_ids:
+                    submission_id = randint(100, 9999999)
+                submission_ids.append(submission_id)
+                
+                grade = random.randint(0, 100)
+                
+                print('Current Item ID: ', item)
+                
+                last_item = students[-1].get('course_id')
+                current_item = item[1]
+                
+                print('Last Item ID: ', last_item)
+                
+                file.write(dedent(f"""
+                           INSERT INTO AssignmentSubmission (SubmissionId, AssignmentId, UserId, SubmissionDate, Grade) VALUES
+                            ('{submission_id}','{assignment_id}','{user_id}','{submission_date}', '{grade}');\n
+                           """))
+                     
+
+
+def generateDiscussionForums():
+   
+   # [ForumId, CourseId, ForumTitle]
+   
+   for index, course_id in enumerate(courses_ids):
+      num_forums = random.randint(1, 10)
+
+      for i in range(num_forums):
+         forum_id = randint(100, 9999999)
+         
+         while forum_id in forum_ids:
+            forum_id = randint(100, 9999999)
+         forum_ids.append(forum_id)
+         
+         forum_title = f"Forum {1+i}"
+         
+         file.write(dedent(f"""
+                            INSERT INTO DiscussionForum (ForumId, ForumTitle, CourseId) VALUES
+                            ('{forum_id}', '{forum_title}' , '{course_id}');\n
+                            """))
+
+
+def generateDiscussionThread():
+    
+    # [ThreadId, ForumId, ParentThread, UserId, ThreadTitile, ThreadContent]
+   
+    #  for each forum, generate a random number of threads and randomly choose a user who's a member of forum course to post the thread
+    
+    for course_id in courses_ids:
+        
+        num_threads = random.randint(1, 10)
+        
+        for i in range(num_threads):
+                
+                # pick random thread id for the parent id if list is not empty
+                if len(thread_ids) > 0:
+                    parent_thread = random.choice(thread_ids)
+                else:
+                    parent_thread = randint(1, 9999999)
+                    
+                thread_id = randint(100, 9999999)
+                
+                while thread_id in thread_ids:
+                    thread_id = randint(100, 9999999)
+                thread_ids.append(thread_id)
+                
+                
+                thread_title = f'Thread Title {i+1}'
+                thread_content = fake.text()
+                
+                user = random.choice([member for member in membership_data if member['course_id'] == course_id])
+                user_id = account_dict[user['account_id']][1]
+                
+                forum_id = random.choice(forum_ids)
+                
+                
+                file.write(dedent(f"""INSERT INTO DiscussionThread (ThreadId, ForumId, ThreadTitle, ThreadContent, UserId, ParentThreadId) VALUES
+                            ('{thread_id}','{forum_id}','{thread_title}','{thread_content}','{user_id}','{parent_thread}');\n
+                            """))
+   
+
+def generateCalendarEvents():
+    
+    # [EventId, CourseId, StartDate, EndDate, EventTitle, Description]
+    # example data:
+    # 1, 1127, 'May 05, 2018', 'May 05, 2018', PythonTest, Test on Python
+    
+    file.write(dedent("""
+    INSERT INTO CalendarEvent
+                    VALUES"""))
+    
+    for index, course_id in enumerate(courses_ids):
+            
+            num_events = random.randint(0,5)
+    
+            for i in range(num_events):
+                
+                event_id = randint(100, 9999999)
+                event_title = f'Event {1+i}'
+                description = fake.text()
+                
+                start_date = (datetime.datetime.now() + timedelta(days=randint(5, 14))).strftime("%Y-%m-%d")
+                end_date = (datetime.datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=randint(2, 5))).strftime("%Y-%m-%d")
+        
+                if (index == num_courses-1) and (i == num_events-1):
+                    file.write(f"""('{event_id}','{course_id}','{start_date}', '{end_date}', '{event_title}', '{description}');\n
+                                """)
+                    
+                else: 
+                    file.write(f"""('{event_id}','{course_id}','{start_date}', '{end_date}', '{event_title}', '{description}'),
+                                """)
+   
+
 
 # Run the functions
 
@@ -518,6 +706,7 @@ generateStudents()
 generateAdmins()
 generateCourseMaintainers()
 
+
 generateCourses()
 generateSections()
 generateTopics()
@@ -525,6 +714,15 @@ generateTopics()
 generateSectionItems()
 
 generateMembership()
+
+generateAssignments()
+generateAssignmentSubmission()
+
+generateDiscussionForums()
+generateDiscussionThread()
+
+generateCalendarEvents()
+
 
 file.close()
 
