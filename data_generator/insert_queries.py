@@ -38,7 +38,7 @@ passwords = []
 
 # num_users = 100000
 num_users = 200000
-num_courses = 300
+num_courses = 210
 min_num_members = 10
 
 def generateUsers():
@@ -361,6 +361,8 @@ def generateMembership():
     # print('Unassigned accounts and Number:', unassigned_accounts, len(unassigned_accounts))
     
     assignRemainingAccounts(unassigned_accounts, courses_ids, account_dict, member_ids, account_course_assignments)
+    
+    print('Finished generating Membership Data')
 
             
 
@@ -414,7 +416,7 @@ def assignRemainingAccounts(unassigned_accounts, courses_ids, account_dict, memb
             
             
             
-    print('Newly assigned accounts:', account_counts)
+    # print('Newly assigned accounts:', account_counts)
     
     
 
@@ -430,7 +432,7 @@ def generateSections():
     
     for index , course_id in enumerate(courses_ids):
         
-        num_sections = random.randint(1, 10)
+        num_sections = random.randint(1, 3)
         
         for i in range(num_sections):
             
@@ -451,6 +453,7 @@ def generateSections():
                 file.write(f"""
                             ('{section_id}', '{section_title}', '{course_id}'),
                             """);
+    print('Finished generating Sections')
                 
 def generateTopics():
     
@@ -464,7 +467,7 @@ def generateTopics():
     
     for section_id in section_ids:
         
-        num_topics = random.randint(1, 10)
+        num_topics = random.randint(1, 3)
         
         for i in range(num_topics):
             
@@ -484,6 +487,8 @@ def generateTopics():
                 file.write(f"""
                         ('{topic_id}', '{topic_title}', '{section_id}'),
                         """)
+                
+    print('Finished generating Topics')
     
 def generateSectionItems():
     
@@ -499,7 +504,7 @@ def generateSectionItems():
     
     for section_id in section_ids:
         
-        num_items = random.randint(1, 10)
+        num_items = random.randint(1, 3)
         
         for i in range(num_items):
             
@@ -518,6 +523,8 @@ def generateSectionItems():
                 file.write(f"""
                         ('{item_id}', '{section_content}', '{section_id}'),
                         """)
+                
+    print('Finished generating Section Items')
     
 
 def generateAssignments():
@@ -529,7 +536,7 @@ def generateAssignments():
     
     for index, course_id in enumerate(courses_ids):
         
-        num_assginments = random.randint(0,5)
+        num_assginments = random.randint(1,2)
 
         delta = timedelta(days=randint(5, 14))
         due_date = (datetime.datetime.now() + delta).strftime("%Y-%m-%d")
@@ -551,35 +558,23 @@ def generateAssignments():
                             """))
                  
     print('Assignments and Courses:', assignments_course)
+    print('Finished generating Assignments')
 
 def generateAssignmentSubmission():
-   
-   # [SubmissionId, AssignmentId, UserId, SubmissionDate]
+    
+    count = 0
 
-   # example:
-   # 283, 3, 54387, May 24, 2024
-   
-   print('Membership Data (first 5)', membership_data[:5])
-   
-   
-   for index, item in enumerate(assignments_course.items()):
+    for index, item in enumerate(assignments_course.items()):
         assignment_id = item[0]
         course_id = item[1]
-        
+
         for member in membership_data:
-            
             students = [student for student in membership_data if student['course_id'] == course_id and student['account_type'] == 'Student']
-            # example data from the students list
-            # {'member_id': 100, 'course_id': 100, 'account_id': 100, 'account_type': 'Student'}
             
             if member['course_id'] == course_id and member['account_type'] == 'Student':
-                
-                # get user_id from account_dict by checking if the account_id matches the account_id in membership_data
                 user_id = account_dict[member['account_id']][1]
-                
                 date = datetime.datetime.now()
                 submission_date = date.strftime("%Y-%m-%d")
-                
                 submission_id = randint(100, 9999999)
                 
                 while submission_id in submission_ids:
@@ -588,17 +583,63 @@ def generateAssignmentSubmission():
                 
                 grade = random.randint(0, 100)
                 
-                print('Current Item ID: ', item)
-                
-                last_item = students[-1].get('course_id')
-                current_item = item[1]
-                
-                print('Last Item ID: ', last_item)
-                
                 file.write(dedent(f"""
                            INSERT INTO AssignmentSubmission (SubmissionId, AssignmentId, UserId, SubmissionDate, Grade) VALUES
                             ('{submission_id}','{assignment_id}','{user_id}','{submission_date}', '{grade}');\n
                            """))
+                
+                count += 1
+                
+                if count == 10:
+                    count = 0
+                    break
+    print('Finished generating Assignment Submissions')
+   
+#    # [SubmissionId, AssignmentId, UserId, SubmissionDate]
+
+#    # example:
+#    # 283, 3, 54387, May 24, 2024
+   
+#    print('Membership Data (first 5)', membership_data[:5])
+   
+   
+#    for index, item in enumerate(assignments_course.items()):
+#         assignment_id = item[0]
+#         course_id = item[1]
+        
+#         for member in membership_data:
+            
+#             students = [student for student in membership_data if student['course_id'] == course_id and student['account_type'] == 'Student']
+#             # example data from the students list
+#             # {'member_id': 100, 'course_id': 100, 'account_id': 100, 'account_type': 'Student'}
+            
+#             if member['course_id'] == course_id and member['account_type'] == 'Student':
+                
+#                 # get user_id from account_dict by checking if the account_id matches the account_id in membership_data
+#                 user_id = account_dict[member['account_id']][1]
+                
+#                 date = datetime.datetime.now()
+#                 submission_date = date.strftime("%Y-%m-%d")
+                
+#                 submission_id = randint(100, 9999999)
+                
+#                 while submission_id in submission_ids:
+#                     submission_id = randint(100, 9999999)
+#                 submission_ids.append(submission_id)
+                
+#                 grade = random.randint(0, 100)
+                
+#                 print('Current Item ID: ', item)
+                
+#                 last_item = students[-1].get('course_id')
+#                 current_item = item[1]
+                
+#                 print('Last Item ID: ', last_item)
+                
+#                 file.write(dedent(f"""
+#                            INSERT INTO AssignmentSubmission (SubmissionId, AssignmentId, UserId, SubmissionDate, Grade) VALUES
+#                             ('{submission_id}','{assignment_id}','{user_id}','{submission_date}', '{grade}');\n
+#                            """))
                      
 
 
@@ -607,7 +648,7 @@ def generateDiscussionForums():
    # [ForumId, CourseId, ForumTitle]
    
    for index, course_id in enumerate(courses_ids):
-      num_forums = random.randint(1, 10)
+      num_forums = random.randint(1, 3)
 
       for i in range(num_forums):
          forum_id = randint(100, 9999999)
@@ -621,7 +662,8 @@ def generateDiscussionForums():
          file.write(dedent(f"""
                             INSERT INTO DiscussionForum (ForumId, ForumTitle, CourseId) VALUES
                             ('{forum_id}', '{forum_title}' , '{course_id}');\n
-                            """))
+                            """));
+   print('Finished generating Discussion Forums')
 
 
 def generateDiscussionThread():
@@ -632,7 +674,7 @@ def generateDiscussionThread():
     
     for course_id in courses_ids:
         
-        num_threads = random.randint(1, 10)
+        num_threads = random.randint(1, 3)
         
         for i in range(num_threads):
                 
@@ -661,6 +703,8 @@ def generateDiscussionThread():
                 file.write(dedent(f"""INSERT INTO DiscussionThread (ThreadId, ForumId, ThreadTitle, ThreadContent, UserId, ParentThreadId) VALUES
                             ('{thread_id}','{forum_id}','{thread_title}','{thread_content}','{user_id}','{parent_thread}');\n
                             """))
+                
+    print('Finished generating Discussion Threads')
    
 
 def generateCalendarEvents():
@@ -693,8 +737,8 @@ def generateCalendarEvents():
                 else: 
                     file.write(f"""('{event_id}','{course_id}','{start_date}', '{end_date}', '{event_title}', '{description}'),
                                 """)
-   
-
+                    
+    print('Finished generating Calendar Events')
 
 # Run the functions
 
