@@ -729,14 +729,10 @@ def generateCalendarEvents():
                 
                 start_date = (datetime.datetime.now() + timedelta(days=randint(5, 14))).strftime("%Y-%m-%d")
                 end_date = (datetime.datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=randint(2, 5))).strftime("%Y-%m-%d")
-        
-                if (index == num_courses-1) and (i == num_events-1):
-                    file.write(f"""('{event_id}','{course_id}','{start_date}', '{end_date}', '{event_title}', '{description}');\n
-                                """)
-                    
-                else: 
-                    file.write(f"""('{event_id}','{course_id}','{start_date}', '{end_date}', '{event_title}', '{description}'),
-                                """)
+                
+                file.write(dedent(f"""INSERT INTO CalendarEvent (EventId, CourseId, StartDate, EndDate, EventTitle, Description) VALUES
+                            ('{event_id}','{course_id}','{start_date}', '{end_date}', '{event_title}', '{description}');\n
+                            """))
                     
     print('Finished generating Calendar Events')
 
