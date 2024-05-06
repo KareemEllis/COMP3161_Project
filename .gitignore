@@ -3,6 +3,9 @@ node_modules/
 .next/
 out/
 
+# Insert Queries SQL
+insert_queries.sql
+
 # Environment configs
 .env.local
 .env.development.local
