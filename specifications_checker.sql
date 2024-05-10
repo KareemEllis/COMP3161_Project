@@ -62,6 +62,6 @@ JOIN ourvle.user AS u ON m.UserId = u.UserId
 JOIN ourvle.account AS a ON u.UserId = a.UserId
 WHERE a.AccType = 'Course Maintainer'
 GROUP BY m.UserId
-ORDER BY num_courses;
+ORDER BY num_courses DESC;
 
 
