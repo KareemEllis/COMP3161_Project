@@ -811,7 +811,7 @@ def get_forum_threads(forum_id):
         cursor.execute("""
             SELECT ThreadId, ThreadTitle, ThreadContent, UserId, ParentThreadId
             FROM DiscussionThread
-            WHERE ForumId = %s AND ParentThreadId IS NULL
+            WHERE ForumId = %s
             ORDER BY ThreadId ASC
         """, (forum_id,))
         
@@ -870,7 +870,8 @@ def create_section():
         
         # Check if the user is a Course Maintainer
         acc_type = getAccountType(user_id)
-        if not acc_type != 'Course Maintainer':
+        print(acc_type)
+        if acc_type != 'Course Maintainer':
             return jsonify({"message": "Only Course Maintainers can add sections"}), 401
         
         # Check if the course exists
